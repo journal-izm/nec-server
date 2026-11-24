@@ -6,6 +6,7 @@
 
 <p align="center"><img src="docs/img/nec-server_context.png" alt="전체 시스템에서 이 저장소의 위치" width="100%"></p>
 <p align="center"><sub>전체 시스템에서 이 저장소의 위치</sub></p>
+
 | 항목 | 내용 |
 |---|---|
 | 포트 | 8000 |
@@ -40,6 +41,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/nec-server_numbering.png" alt="이 저장소의 번호 범위" width="100%"></p>
 <p align="center"><sub>이 저장소의 번호 범위</sub></p>
+
 ## 📚 설계 문서 8종
 
 <details>
@@ -65,6 +67,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 ### 일정
 <p align="center"><img src="docs/img/schedule.png" alt="P1 일정" width="100%"></p>
 <p align="center"><sub>P1 일정</sub></p>
+
 
 </details>
 
@@ -107,6 +110,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/nec-server_func_tree.png" alt="기능 구조도" width="100%"></p>
 <p align="center"><sub>기능 구조도</sub></p>
+
 ### 영역 02 · 선관위 개표 데이터
 | 기능 ID | 기능명 | 설명 | 요구 | 화면 | API | 테이블 |
 |---|---|---|---|---|---|---|
@@ -118,6 +122,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 ### 시뮬레이터 상태
 <p align="center"><img src="docs/img/nec_sim_state.png" alt="시뮬레이터 상태 전이" width="100%"></p>
 <p align="center"><sub>시뮬레이터 상태 전이</sub></p>
+
 | 규칙 | 내용 |
 |---|---|
 | NBR-01 | 발행한 seq의 집계는 고치지 않는다 |
@@ -149,6 +154,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/SCR-02-01.png" alt="SCR-02-01 선관위 개표 시뮬레이터" width="100%"></p>
 <p align="center"><sub>SCR-02-01 선관위 개표 시뮬레이터</sub></p>
+
 | 번호 | 요소 | 설명 |
 |---|---|---|
 | 1 | 진행 상태 | 대기 / 개표 중 / 일시정지 / 종료 |
@@ -170,6 +176,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/erd_nec.png" alt="nec_db ERD" width="100%"></p>
 <p align="center"><sub>nec_db ERD</sub></p>
+
 | 테이블 ID | 테이블명 | 설명 | 사용 기능 |
 |---|---|---|---|
 | TBL-02-01 | `election` | 선거 기본정보 | FN-02-01 |
@@ -290,6 +297,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/nec-server_api_map.png" alt="API 지도" width="100%"></p>
 <p align="center"><sub>API 지도</sub></p>
+
 | API ID | 메서드 | 경로 | 이름 | 권한 |
 |---|---|---|---|---|
 | API-02-01 | GET | `/nec/v1/elections/{electionId}` | 선거 기본정보 | X-API-KEY |
@@ -302,6 +310,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 <p align="center"><img src="docs/img/api_02.png" alt="영역 02 API" width="100%"></p>
 <p align="center"><sub>영역 02 API</sub></p>
+
 #### API-02-01 `GET /nec/v1/elections/{electionId}` — 선거 기본정보
 권한: X-API-KEY · 테이블 TBL-02-01, TBL-02-02, TBL-02-03
 
@@ -363,6 +372,7 @@ since_seq = 마지막으로 받은 seq (처음은 0)
 
 <p align="center"><img src="docs/img/nec-server_context.png" alt="저장소 관계" width="100%"></p>
 <p align="center"><sub>저장소 관계</sub></p>
+
 | 구성 요소 | 역할 |
 |---|---|
 | NEC API 서버 | 기본정보·변경분 제공, 키 확인 |
@@ -372,6 +382,7 @@ since_seq = 마지막으로 받은 seq (처음은 0)
 
 <p align="center"><img src="docs/img/seq_sync.png" alt="방송국 수신 흐름 (1~2번이 nec-server 구간)" width="100%"></p>
 <p align="center"><sub>방송국 수신 흐름 (1~2번이 nec-server 구간)</sub></p>
+
 | 변수 | 예 |
 |---|---|
 | NEC_DB_URL | sqlite:///nec.db |
@@ -388,6 +399,7 @@ since_seq = 마지막으로 받은 seq (처음은 0)
 
 <p align="center"><img src="docs/img/nec-server_folder.png" alt="폴더 구조" width="100%"></p>
 <p align="center"><sub>폴더 구조</sub></p>
+
 ### 저장소 규칙
 - `.env`, `*.db`는 올리지 않고 `.env.example`만 올린다
 - 브랜치: `main` ← `dev` ← `feature/영역코드-이름` (예: `feature/04-article-gen`)
