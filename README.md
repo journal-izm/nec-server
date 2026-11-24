@@ -14,7 +14,7 @@
 | 연결 저장소 | [station-onair](https://github.com/journal-izm/station-onair) |
 | 전체 설계 | [election-onair](https://github.com/journal-izm/election-onair) |
 | 설계 문서 폴더 | [Google Drive](https://drive.google.com/drive/folders/1Izs8LAkGqGRGMGK07rxIR9qtcB-rEDFs) |
-| 규모 | 요구 6 · 기능 4 · 화면 1 · API 4 · 테이블 7 |
+| 규모 | 요구 7 · 기능 4 · 화면 1 · API 4 · 테이블 7 |
 
 ## 🤝 API 계약 (두 저장소를 잇는 약속)
 
@@ -72,7 +72,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 </details>
 
 <details>
-<summary><b>02 · 요구사항정의서 — 요구 6개와 추적표</b></summary>
+<summary><b>02 · 요구사항정의서 — 요구 7개와 추적표</b></summary>
 
 📄 원본: [Google Docs](https://docs.google.com/document/d/1IX61rsmplFbQUfgAEYyJDZL9Tr1paCopO3T9aAOLil8/edit) · [Word 파일](docs/02_요구사항정의서_nec-server.docx)
 
@@ -83,6 +83,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 | REQ-02-02 | 개표 집계 변경분 제공 | 선관위 서버는 지역·후보별 득표와 개표율을 갱신하고, 순번(seq) 이후의 변경분만 내려준다. | 필수 | FN-02-02 |
 | REQ-02-03 | 방송국 인증 | 선관위 API는 등록된 방송국(M·K)이 발급받은 API 키로만 호출할 수 있다. | 필수 | FN-02-03 |
 | REQ-02-04 | 개표 시뮬레이터 | 리허설·방송을 위해 개표 진행을 시작·일시정지·배속·초기화할 수 있다. | 필수 | FN-02-04 |
+| REQ-02-05 | 클라우드 시연 모드 | 클라우드 배포본은 서버가 켜질 때 초기 데이터를 넣고 개표 시나리오를 자동으로 반복 재생한다. | 권장 | FN-02-04 |
 
 ### 비기능 요구사항
 | 요구 ID | 구분 | 요구사항명 | 내용 | 관련 기능 |
@@ -97,6 +98,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 | REQ-02-02 | FN-02-02 | — | API-02-02 | TBL-02-04, TBL-02-05 |
 | REQ-02-03 | FN-02-03 | — | API-02-01, API-02-02 | TBL-02-06 |
 | REQ-02-04 | FN-02-04 | SCR-02-01 | API-02-03, API-02-04 | TBL-02-04, TBL-02-05, TBL-02-07 |
+| REQ-02-05 | FN-02-04 | SCR-02-01 | API-02-03, API-02-04 | TBL-02-04, TBL-02-05, TBL-02-07 |
 | NFR-02 | FN-02-03 | — | API-02-01, API-02-02 | TBL-02-06 |
 | NFR-04 | FN-02-04 | SCR-02-01 | API-02-03, API-02-04 | TBL-02-04, TBL-02-05, TBL-02-07 |
 
@@ -117,7 +119,7 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 | FN-02-01 | 선거 기본정보 제공 | 선거·지역·후보 정보를 방송국에 제공 | REQ-02-01 | — | API-02-01 | TBL-02-01 TBL-02-02 TBL-02-03 |
 | FN-02-02 | 개표 집계 변경분 제공 | since_seq 이후 바뀐 지역·후보 집계만 응답 | REQ-02-02 | — | API-02-02 | TBL-02-04 TBL-02-05 |
 | FN-02-03 | 방송국 API 키 인증 | X-API-KEY 헤더를 등록된 키와 대조 | REQ-02-03 NFR-02 | — | API-02-01 API-02-02 | TBL-02-06 |
-| FN-02-04 | 개표 시뮬레이터 제어 | 시나리오에 따라 집계를 늘림. 시작·일시정지·배속·초기화 | REQ-02-04 NFR-04 | SCR-02-01 | API-02-03 API-02-04 | TBL-02-07 TBL-02-04 TBL-02-05 |
+| FN-02-04 | 개표 시뮬레이터 제어 | 시나리오에 따라 집계를 늘림. 시작·일시정지·배속·초기화. 시연 모드(DEMO_MODE)에서는 자동 시작·반복 | REQ-02-04 REQ-02-05 NFR-04 | SCR-02-01 | API-02-03 API-02-04 | TBL-02-07 TBL-02-04 TBL-02-05 |
 
 ### 시뮬레이터 상태
 <p align="center"><img src="docs/img/nec_sim_state.png" alt="시뮬레이터 상태 전이" width="100%"></p>
@@ -399,6 +401,12 @@ since_seq = 마지막으로 받은 seq (처음은 0)
 
 <p align="center"><img src="docs/img/nec-server_folder.png" alt="폴더 구조" width="100%"></p>
 <p align="center"><sub>폴더 구조</sub></p>
+
+### 결정 사항 (11/24)
+| 항목 | 결정 |
+|---|---|
+| DB | SQLite |
+| 실행 장소 | 강의장 LAN(본방송) + 클라우드(시연, DEMO_MODE) |
 
 ### 저장소 규칙
 - `.env`, `*.db`는 올리지 않고 `.env.example`만 올린다
