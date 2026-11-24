@@ -64,6 +64,23 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 - 당선 확정이 시작 후 약 10분 무렵 나오도록 설계
 - 리허설 5배속, 본방송 1배속, 초기화로 반복 재현 (NFR-04)
 
+#### 지역·후보
+| 코드 | 이름 |
+|---|---|
+| STAR | 별빛구 |
+| DEEP | 심해구 |
+| DUNE | 사막구 |
+| NEBULA | 성운구 |
+| ORBIT | 궤도구 |
+
+| 기호 | 후보 (정당) | 콘셉트 · 슬로건 | 이력 | 공약 | 색 |
+|---|---|---|---|---|---|
+| 1 | 윤별하 (은하공화연합) | 은하 함대 조종사 · “흩어진 별들을 하나의 항로로” | 은하 함대 정찰기 조종사 출신 / 소행성대 구조 작전 지휘 / 우주정거장 '은하1호' 사령관 / 은하공화연합 대표 | 구와 구를 5분 안에 잇는 '초공간 셔틀' 노선 / 구마다 함대식 재난 구조대 / 청소년 조종사 학교 설립 | #FF2BD6 |
+| 2 | 류해온 (심해행성연맹) | 바다 행성의 수호자 · “가장 깊은 바다에서 온 약속” | 바다 행성 '아쿠아리스' 출신 / 심해 도시 방어막 설계 기술자 / 해저 잠수 함대 '해온호' 함장 / 심해행성연맹 대표 | 바닷속 쓰레기 수거 로봇 함대 / 해저 연구 도시 유치로 일자리 / 모든 행성 어린이 바다교실 무료 | #00E5FF |
+| 3 | 오로라 (무소속) | 사막 행성의 외계 통역사 · “모든 종족의 목소리에 답하겠습니다” | 사막 행성의 외계 언어 통역사 / 정체불명 신호 '로라 신호' 해독 / 보조 로봇 '피코'와 우주 교역소 운영 / 첫 출마 | 외계 주민도 쓰는 '만능 번역 민원 창구' / 로봇이 24시간 답하는 구청 민원 / 우주 교역 시장 개설 | #A6FF00 |
+
+> 후보·정당·지역은 모두 가상입니다. 우주 SF 분위기로 만들었지만 실존 영화·작품의 인물·행성 이름, 대사, 로고, 음악은 쓰지 않습니다. 색은 네온색이라 어두운 배경(방송 화면·차트)에서 쓰고, 흰 배경 글자에는 진한색을 씁니다.
+
 ### 일정
 <p align="center"><img src="docs/img/schedule.png" alt="P1 일정" width="100%"></p>
 <p align="center"><sub>P1 일정</sub></p>
@@ -208,9 +225,9 @@ uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :
 
 | 컬럼 | 타입 | 키 | NULL | 설명 |
 |---|---|---|---|---|
-| `region_code` | VARCHAR(10) | PK | N | EAST / WEST … |
+| `region_code` | VARCHAR(10) | PK | N | STAR / DEEP … |
 | `election_id` | VARCHAR(20) | FK | N | → election |
-| `name` | VARCHAR(20) |  | N | 동구 등 |
+| `name` | VARCHAR(20) |  | N | 별빛구 등 |
 | `electors` | INTEGER |  | N | 지역 선거인 수 |
 | `sort_order` | INTEGER |  | N | 표시 순서 |
 
@@ -322,8 +339,8 @@ electionId = HANBIT-2026
 ```
 응답 200
 ```json
-{ "election": {...}, "regions": [ {"code":"EAST","name":"동구","electors":82000} ],
-  "candidates": [ {"id":1,"ballot_no":1,"name":"김하늘","color":"#2F6FDE"} ] }
+{ "election": {...}, "regions": [ {"code":"STAR","name":"별빛구","electors":82000} ],
+  "candidates": [ {"id":1,"ballot_no":1,"name":"윤별하","color":"#FF2BD6"} ] }
 ```
 #### API-02-02 `GET /nec/v1/elections/{electionId}/results?since_seq={n}` — 개표 집계 변경분
 권한: X-API-KEY · 테이블 TBL-02-04, TBL-02-05, TBL-02-06
@@ -335,7 +352,7 @@ since_seq = 마지막으로 받은 seq (처음은 0)
 응답 200
 ```json
 { "last_seq": 42, "status": "COUNTING",
-  "regions": [ {"seq":42,"code":"EAST","counted_rate":51.3,
+  "regions": [ {"seq":42,"code":"STAR","counted_rate":51.3,
      "votes": {"1":15210,"2":14877,"3":2100}} ] }
 ```
 #### API-02-03 `POST /nec/v1/sim/control` — 시뮬레이터 제어
