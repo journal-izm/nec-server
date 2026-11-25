@@ -42,6 +42,9 @@ class Simulator:
 
     # ── 제어 (API-02-03) ──
     def start(self, db: Session, speed: int | None = None) -> SimState:
+        from .models import Candidate, Region
+        if not db.query(Region).count() or not db.query(Candidate).count():
+            raise ValueError("초기 데이터가 없습니다. 서버를 끄고 python seed.py를 먼저 실행하세요")
         st = self.state(db)
         if speed:
             self.set_speed(db, speed)
@@ -144,8 +147,14 @@ class Simulator:
                         self.reset(db)
                         self.start(db)
                         log.info("DEMO_MODE: 처음부터 다시 재생")
-            except Exception:  # 루프는 멈추지 않음
-                log.exception("시뮬레이터 오류")
+            except Exception as e:  # 루프는 멈추지 않음 — 같은 오류가 계속 쌓이지 않게 일시정지
+                log.error("시뮬레이터 오류 → 일시정지: %s", e)
+                try:
+                    with SessionLocal() as db:
+                        db.rollback()
+                        self.pause(db)
+                except Exception:
+                    pass
 
     def launch(self):
         if self._task is None or self._task.done():

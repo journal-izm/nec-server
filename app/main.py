@@ -25,9 +25,13 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 async def lifespan(app: FastAPI):
     config.require("ADMIN_KEY")      # 빠지면 무엇이 없는지 알려 주고 멈춤 (TC-ENV-02)
     init_db()
-    if config.DEMO_MODE:          # 클라우드 시연 모드: 켜질 때 초기 데이터부터 (REQ-02-05)
+    from .db import SessionLocal
+    from .models import Candidate, Election
+    with SessionLocal() as db:
+        empty = db.get(Election, config.ELECTION_ID) is None or db.query(Candidate).count() == 0
+    if empty or config.DEMO_MODE:  # 처음 켰거나(초기 데이터 없음) 클라우드 시연 모드면 seed부터 (REQ-02-05)
         import seed
-        seed.run(quiet=True)
+        seed.run(quiet=config.DEMO_MODE)
     sim.launch()
     yield
 
