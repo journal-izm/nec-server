@@ -33,6 +33,7 @@ def run(reset: bool = False, quiet: bool = False) -> dict:
         el.total_electors = sum(r[2] for r in REGIONS)
         el.status = el.status or "READY"
         db.merge(el)
+        db.flush()                       # 선거를 먼저 저장해야 구·후보가 가리킬 수 있음 (외래 키)
         for i, (code, name, electors) in enumerate(REGIONS, 1):
             db.merge(Region(region_code=code, election_id=el.election_id, name=name, electors=electors, sort_order=i))
         for cid, name, party, color in CANDIDATES:
