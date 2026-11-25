@@ -1,0 +1,17 @@
+# Render 무료 배포 (시연용) — 저장 공간이 임시라 재시작·잠들기 때마다 초기화됨 → DEMO_MODE로 자동 seed·반복 재생
+services:
+  - type: web
+    name: nec-server-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      - key: ADMIN_KEY
+        sync: false          # 대시보드에서 직접 입력
+      - key: STATION_KEY_M
+        sync: false
+      - key: STATION_KEY_K
+        sync: false

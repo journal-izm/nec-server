@@ -30,9 +30,28 @@
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env      # 값 채우기
-python seed.py
+cp .env.example .env      # ADMIN_KEY 채우기
+python seed.py            # 방송국 API 키 2개가 화면에 한 번 나옴 → station-onair .env.m/.env.k의 NEC_API_KEY
 uvicorn app.main:app --port 8000     # 관리 화면 :8000/admin · API 문서 :8000/docs
+```
+
+## 📦 구현 현황 (1단계 완료)
+
+| 영역 | 파일 | 설계 번호 |
+|---|---|---|
+| 시나리오 | `scenario/hanbit_2026.csv` · `tools/make_scenario.py` · `app/scenario.py` | FN-02-04, NFR-04 |
+| 시뮬레이터 | `app/simulator.py` (시작·일시정지·1/2/5배속·초기화·시연 모드 자동 반복) | FN-02-04, REQ-02-05 |
+| 방송국 API | `app/routers/elections.py` | API-02-01 · 02 |
+| 관리 API·화면 | `app/routers/sim.py` · `app/templates/admin.html` | API-02-03 · 04, SCR-02-01 |
+| 인증 | `app/auth.py` (키는 해시로만 저장) | FN-02-03, NFR-02 |
+| DB | `app/models.py` | TBL-02-01 ~ 07 |
+
+시나리오 줄거리: 초반 기호 2 류해온 우세 → 개표율 약 72%(LIVE 7분 무렵) 기호 1 윤별하 역전 → 9분 무렵 당선 유력·확실·확정 (1배속, 전체 10분).
+
+## 🧪 테스트
+
+```bash
+python -m pytest -q          # 1차 확인 테스트케이스 중 자동 항목 (test_tc_… 이름 = TC 번호)
 ```
 
 ## 📌 번호 체계

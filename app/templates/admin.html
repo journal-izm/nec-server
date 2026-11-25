@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SCR-02-01 선관위 개표 시뮬레이터</title>
+<style>
+  :root { --bg:#0B1120; --panel:#141C2F; --line:#24304A; --text:#F2F5FA; --soft:#9AA6BC;
+          --c1:#FF2BD6; --c2:#00E5FF; --c3:#A6FF00; --ok:#3DDC97; --warn:#FFB020; --bad:#FF5A5F; }
+  * { box-sizing:border-box }
+  body { margin:0; font-family:'Noto Sans KR',system-ui,sans-serif; background:var(--bg); color:var(--text) }
+  header { padding:18px 28px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px }
+  header h1 { font-size:20px; margin:0 } header .tag { color:var(--soft); font-size:14px }
+  main { padding:24px 28px; display:grid; grid-template-columns:380px 1fr; gap:24px }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px }
+  .panel h2 { font-size:16px; margin:0 0 14px; color:var(--soft) }
+  label { font-size:14px; color:var(--soft) } input { width:100%; padding:10px; border-radius:8px; border:1px solid var(--line); background:#0F1626; color:var(--text); margin:6px 0 14px }
+  .btns { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+  button { padding:12px; border:0; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; background:#22304D; color:var(--text) }
+  button.primary { background:var(--c2); color:#04121A } button.danger { background:#3A1E25; color:#FF9EA1 }
+  button.on { outline:2px solid var(--c2) }
+  .speed { display:flex; gap:8px; margin:14px 0 } .speed button { flex:1 }
+  .big { font-size:44px; font-weight:800 } .row { display:flex; gap:28px; flex-wrap:wrap }
+  .kv { min-width:140px } .kv .k { color:var(--soft); font-size:13px }
+  .bar { height:12px; background:#0F1626; border-radius:6px; overflow:hidden; margin:10px 0 18px }
+  .bar > div { height:100%; background:linear-gradient(90deg,var(--c2),var(--c1)); width:0 }
+  table { width:100%; border-collapse:collapse; font-size:14px } th,td { padding:8px; border-bottom:1px solid var(--line); text-align:right } th:first-child,td:first-child { text-align:left }
+  .msg { margin-top:10px; font-size:13px; color:var(--warn); min-height:18px }
+  .st-RUNNING { color:var(--ok) } .st-PAUSED { color:var(--warn) } .st-DONE { color:var(--c2) }
+</style>
+</head>
+<body>
+<header><h1>🗳️ 선관위 개표 시뮬레이터</h1><span class="tag">SCR-02-01 · {{ election_id }}{% if demo %} · 시연 모드(자동 반복){% endif %}</span></header>
+<main>
+  <section class="panel">
+    <h2>① 관리 키</h2>
+    <label>X-ADMIN-KEY (.env의 ADMIN_KEY)</label>
+    <input id="key" type="password" placeholder="관리 키 입력 후 Enter">
+    <h2>② 제어</h2>
+    <div class="btns">
+      <button class="primary" onclick="ctl('start')">▶ 시작</button>
+      <button onclick="ctl('pause')">⏸ 일시정지</button>
+    </div>
+    <div class="speed">
+      <button data-s="1" onclick="ctl('speed',1)">1배속</button>
+      <button data-s="2" onclick="ctl('speed',2)">2배속</button>
+      <button data-s="5" onclick="ctl('speed',5)">5배속</button>
+    </div>
+    <button class="danger" style="width:100%" onclick="if(confirmReset()) ctl('reset')">⟲ 초기화 (seq 0부터)</button>
+    <div class="msg" id="msg"></div>
+  </section>
+  <section class="panel">
+    <h2>③ 진행 상태</h2>
+    <div class="row">
+      <div class="kv"><div class="k">상태</div><div class="big" id="status">-</div></div>
+      <div class="kv"><div class="k">전체 개표율</div><div class="big" id="rate">-</div></div>
+      <div class="kv"><div class="k">seq</div><div class="big" id="seq">-</div></div>
+      <div class="kv"><div class="k">경과 (1배속 환산)</div><div class="big" id="elapsed">-</div></div>
+    </div>
+    <div class="bar"><div id="bar"></div></div>
+    <h2>④ 방송국 호출</h2>
+    <table><thead><tr><th>방송국</th><th>마지막 호출</th></tr></thead><tbody id="stations"></tbody></table>
+  </section>
+</main>
+<script>
+const keyEl = document.getElementById('key');
+keyEl.value = sessionStorage.getItem('nec_admin_key') || '';
+keyEl.addEventListener('change', () => { sessionStorage.setItem('nec_admin_key', keyEl.value); refresh(); });
+const H = () => ({ 'Content-Type': 'application/json', 'X-ADMIN-KEY': keyEl.value });
+const msg = t => document.getElementById('msg').textContent = t || '';
+function confirmReset() { return confirm('발표한 개표 결과를 모두 지우고 처음부터 시작할까요?'); }
+function fmt(s) { s = Math.round(s); return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+function draw(d) {
+  const st = document.getElementById('status'); st.textContent = d.status; st.className = 'big st-' + d.status;
+  document.getElementById('rate').textContent = d.total_rate.toFixed(1) + '%';
+  document.getElementById('seq').textContent = d.current_seq;
+  document.getElementById('elapsed').textContent = fmt(d.elapsed_sec) + ' / ' + fmt(d.duration_sec);
+  document.getElementById('bar').style.width = Math.min(100, d.total_rate) + '%';
+  document.querySelectorAll('.speed button').forEach(b => b.classList.toggle('on', +b.dataset.s === d.speed));
+  document.getElementById('stations').innerHTML = d.stations.map(s =>
+    `<tr><td>${s.name}</td><td>${s.last_called_at || '아직 없음'}</td></tr>`).join('');
+}
+async function ctl(action, speed) {
+  if (!keyEl.value) return msg('관리 키를 먼저 입력하세요');
+  const r = await fetch('/nec/v1/sim/control', { method: 'POST', headers: H(), body: JSON.stringify({ action, speed }) });
+  const d = await r.json();
+  if (!r.ok) return msg(d.detail || '오류');
+  msg(''); draw(d);
+}
+async function refresh() {
+  if (!keyEl.value) return msg('관리 키를 입력하면 상태가 보입니다');
+  const r = await fetch('/nec/v1/sim/status', { headers: H() });
+  const d = await r.json();
+  if (!r.ok) return msg(d.detail || '오류');
+  msg(''); draw(d);
+}
+refresh(); setInterval(refresh, 1000);
+</script>
+</body>
+</html>
