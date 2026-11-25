@@ -23,6 +23,7 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    config.require("ADMIN_KEY")      # 빠지면 무엇이 없는지 알려 주고 멈춤 (TC-ENV-02)
     init_db()
     if config.DEMO_MODE:          # 클라우드 시연 모드: 켜질 때 초기 데이터부터 (REQ-02-05)
         import seed
