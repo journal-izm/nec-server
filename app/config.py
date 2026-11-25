@@ -20,21 +20,27 @@ def _load_dotenv(path: Path) -> None:
 _load_dotenv(BASE_DIR / ".env")
 
 
+def _env(name: str, default: str = "") -> str:
+    """환경 변수 읽기. .env에 'NAME=' 처럼 값이 비어 있으면 기본값을 씀."""
+    v = os.getenv(name)
+    return v.strip() if v and v.strip() else default
+
+
 def _bool(v: str) -> bool:
     return str(v).lower() in ("1", "true", "yes", "on")
 
 
-NEC_DB_URL = os.getenv("NEC_DB_URL", f"sqlite:///{BASE_DIR / 'nec.db'}")
-ADMIN_KEY = os.getenv("ADMIN_KEY", "")
-SCENARIO = os.getenv("SCENARIO", "hanbit_2026.csv")
+NEC_DB_URL = _env("NEC_DB_URL", f"sqlite:///{BASE_DIR / 'nec.db'}")
+ADMIN_KEY = _env("ADMIN_KEY", "")
+SCENARIO = _env("SCENARIO", "hanbit_2026.csv")
 SCENARIO_PATH = BASE_DIR / "scenario" / SCENARIO
-ELECTION_ID = os.getenv("ELECTION_ID", "HANBIT-2026")
-DEMO_MODE = _bool(os.getenv("DEMO_MODE", "false"))
-DEMO_RESTART_SEC = int(os.getenv("DEMO_RESTART_SEC", "30"))   # 시연 모드: 개표가 끝나고 다시 시작하기까지
-TICK_SEC = float(os.getenv("SIM_TICK_SEC", "0.5"))            # 시뮬레이터가 시계를 확인하는 간격
+ELECTION_ID = _env("ELECTION_ID", "HANBIT-2026")
+DEMO_MODE = _bool(_env("DEMO_MODE", "false"))
+DEMO_RESTART_SEC = int(_env("DEMO_RESTART_SEC", "30"))   # 시연 모드: 개표가 끝나고 다시 시작하기까지
+TICK_SEC = float(_env("SIM_TICK_SEC", "0.5"))            # 시뮬레이터가 시계를 확인하는 간격
 # 방송국 API 키 (seed.py가 해시로 저장). 비워 두면 seed가 새 키를 만들어 화면에 한 번 보여 줌
-STATION_KEY_M = os.getenv("STATION_KEY_M", "")
-STATION_KEY_K = os.getenv("STATION_KEY_K", "")
+STATION_KEY_M = _env("STATION_KEY_M", "")
+STATION_KEY_K = _env("STATION_KEY_K", "")
 
 
 def require(*names: str) -> None:
