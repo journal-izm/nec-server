@@ -14,7 +14,8 @@ def _load_dotenv(path: Path) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         k, v = line.split("=", 1)
-        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        v = v.split(" #", 1)[0].strip().strip('"').strip("'")         # 값 뒤 주석은 버림
+        os.environ.setdefault(k.strip(), v)
 
 
 _load_dotenv(BASE_DIR / ".env")
@@ -30,7 +31,7 @@ def _bool(v: str) -> bool:
     return str(v).lower() in ("1", "true", "yes", "on")
 
 
-NEC_DB_URL = _env("NEC_DB_URL", f"sqlite:///{BASE_DIR / 'nec.db'}")
+NEC_DB_URL = _env("NEC_DB_URL", f"sqlite:///{(BASE_DIR / 'nec.db').as_posix()}")
 ADMIN_KEY = _env("ADMIN_KEY", "")
 SCENARIO = _env("SCENARIO", "hanbit_2026.csv")
 SCENARIO_PATH = BASE_DIR / "scenario" / SCENARIO
@@ -48,3 +49,7 @@ def require(*names: str) -> None:
     missing = [n for n in names if not os.getenv(n)]
     if missing:
         raise SystemExit(f"[설정 오류] .env에 다음 값이 없습니다: {', '.join(missing)}  (.env.example 참고)")
+
+
+if "://" not in NEC_DB_URL:
+    raise SystemExit(f"[설정 오류] DB 주소가 이상합니다: {NEC_DB_URL!r} — .env의 DB 주소 칸을 비우거나 sqlite:///파일이름.db 형식으로 적으세요")
